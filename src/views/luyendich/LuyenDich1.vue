@@ -58,13 +58,12 @@
                 <h1>
                     <i class="menu-icon ti-angle-double-left" >1</i>
                     <i class="menu-icon ti-angle-double-right" >2</i>
-                    Luyện Dịch Chữ Hán
+                    To Do List
                 </h1>
 
-            <!-- Thêm combobox -->
-            <!-- <label for="fileList">Chọn tệp:</label> -->
-            <select id="fileList" class="menu-fileList">
-                <!-- Danh sách tên file sẽ được thêm ở đây bằng mã JavaScript -->
+        
+            <select id="fileList" class="menu-fileList" v-model="selectedFile">
+                <!-- <option v-for="file in fileList" :value="file.id">{{ file.name }}</option> -->
             </select>
         
             <button id="add-section" class="buttoncss add-section" onclick="addSection()"> 
@@ -590,11 +589,22 @@ h1{
 <script>
 import { fetchData, addData, updateData, deleteData } from '@/services/firebaseService';
 export default{
-    
+    data() {
+    return {
+      fileList: [] // Khai báo biến fileList để lưu trữ danh sách tệp
+    }
+    },
+
+    mounted() {
+    this.loadData('users/user1/contents'); // Gọi hàm loadData khi component được mounted
+    },
+
     methods: {
-    async loadData() {
-      const data = await fetchData();
-      console.log(data);
+    async loadData(path) {
+      const data = await fetchData(path);
+      this.fileList = data;
+    //   console.log(data);
+      this.updateFileList();
     },
 
     async addNewData() {
@@ -610,7 +620,25 @@ export default{
     async deleteExistingData(id) {
       await deleteData(id);
     },
+
+    updateFileList() {
+      const selectElement = document.getElementById('fileList');
+      
+      // Xóa tất cả các mục hiện có trong phần tử <select>
+      selectElement.innerHTML = '';
+      
+      // Thêm một mục cho mỗi tệp trong fileList
+      this.fileList.forEach(file => {
+        console.log(file);
+        const optionElement = document.createElement('option');
+        optionElement.text = file; // Sử dụng tên của tệp làm nội dung của mục
+        // console.log(optionElement);
+        selectElement.add(optionElement);
+      });
+    }
   },
+
+  
 }
 
 </script>

@@ -1,7 +1,5 @@
-// firebaseService.js
-
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { getDatabase, ref, push, set, update, remove, get } from 'firebase/database';
 
 const firebaseConfig = {
     apiKey: process.env.VUE_APP_FIREBASE_API_KEY,
@@ -14,27 +12,44 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getDatabase(app);
 
-export const fetchData = async () => {
-  const dataRef = collection(db, 'your_collection');
-  const snapshot = await getDocs(dataRef);
+export const fetchData = async (path) => {
+  const dataRef = ref(db, path);
+  const snapshot = await get(dataRef);
   
-  const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  // const data = snapshot.val();
+  // return data ? Object.entries(data).reduce((acc, [key, value]) => {
+  //   acc.push({ id: key, ...value });
+  //   return acc;
+  // }, []) : [];
+  const data = Object.keys(snapshot.val());
   return data;
+
 };
 
 export const addData = async (newData) => {
-  const dataRef = collection(db, 'your_collection');
-  await addDoc(dataRef, newData);
+  const dataRef = ref(db, 'your_collection');
+  await push(dataRef, newData);
 };
 
-export const updateData = async (id, updatedData) => {
-  const dataRef = doc(db, 'your_collection', id);
-  await setDoc(dataRef, updatedData, { merge: true });
+export const setData = async (id, setData) => {
+  const dataRef = ref(db, 'your_collection/' + id);
+  await set(dataRef, setData);
+};
+
+export const updateData = async (path, newData) => {
+  try {
+    const dataRef = ref(db, path);
+    await update(dataRef, newData);
+    console.log("Data updated successfully!");
+  } catch (error) {
+    console.error("Error updating data:", error);
+  }
 };
 
 export const deleteData = async (id) => {
-  const dataRef = doc(db, 'your_collection', id);
-  await deleteDoc(dataRef);
+  const dataRef = ref(db, 'your_collection/' + id);
+  await remove(dataRef);
 };
+
